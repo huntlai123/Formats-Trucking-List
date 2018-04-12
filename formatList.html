@@ -1,0 +1,147 @@
+<html>
+	<head> 
+		<link href = "style.css" rel = "stylesheet" type = "text/css">
+		<style type = "style/css">
+		</style>
+		<script type="text/javascript">
+			var jsonDoc;
+			var myWindow;
+			var jsonDocParsed;
+			var valid;
+			function loadJSON (url) 
+			{
+				try
+				{
+					var xmlhttp=new XMLHttpRequest();
+					xmlhttp.open("GET",url,false); //false = synchronous request. 
+					xmlhttp.send(); //open, send, responseText are
+					if(xmlhttp.status == 404)
+					{
+						alert("File does not exist");
+						valid = false;
+					}
+					jsonDoc=xmlhttp.responseText; //properties of XMLHTTPRequest
+					return jsonDoc; // file returned
+				}
+				catch (e)
+				{
+					alert("File does not exist.");
+					valid = false;
+				}
+				
+			}
+
+			function numRowsAndColumns()
+			{
+				try
+				{
+					numColumns = jsonDocParsed.Mainline.Table.Header.Data.length;
+					numRows = jsonDocParsed.Mainline.Table.Row.length;
+				}
+				catch (e)
+				{
+					alert("File contains no information.");
+					valid = false;
+				}
+			}
+
+			function createTable()
+			{
+				var output = "<html><head><title> Top Trucking Companies </title></head><body>";
+				output += "<table style = 'width: 100%; border: 1px solid black; border-collapse: collapse;'><tr style = 'border: 1px solid black; border-collapse: collapse;'>";
+
+				for(var i = 0; i < numColumns; i++)
+				{
+					output += "<th style = 'border: 1px solid black; border-collapse: collapse;'>" + jsonDocParsed.Mainline.Table.Header.Data[i] + "</th>";
+				}
+				output += "</tr>";
+
+				for(var i = 0; i < numRows; i++)
+				{
+					output += "<tr>";
+
+					output += "<td style = 'border: 1px solid black; border-collapse: collapse; width:10%;'>" 
+						+ jsonDocParsed.Mainline.Table.Row[i].Company + "</td>";
+
+					output += "<td style = 'border: 1px solid black; border-collapse: collapse; width:10%;'>" 
+						+ jsonDocParsed.Mainline.Table.Row[i].Services + "</td>";
+					
+					output += "<td style = 'border: 1px solid black; border-collapse: collapse; width:25%;'>";
+					if(jsonDocParsed.Mainline.Table.Row[i].Hubs != "")
+					{
+						output += "<ul>"
+						for(var j = 0; j < jsonDocParsed.Mainline.Table.Row[i].Hubs.Hub.length; j++)
+						{
+							output += "<li>" + jsonDocParsed.Mainline.Table.Row[i].Hubs.Hub[j] + "</li>";
+						}
+						output += "</ul>";
+					}
+					output += "</td>";
+
+					output += "<td style = 'border: 1px solid black; border-collapse: collapse; width:5%;'>" 
+						+ jsonDocParsed.Mainline.Table.Row[i].Revenue + "</td>";
+
+					output += "<td style = 'border: 1px solid black; border-collapse: collapse; width:15%;'>" 
+						+ "<a href = '" + jsonDocParsed.Mainline.Table.Row[i].HomePage + "'>" 
+						+ jsonDocParsed.Mainline.Table.Row[i].HomePage + "</a></td>";
+
+					output += "<td style = 'border: 1px solid black; border-collapse: collapse; width:30%;'>"
+
+					if(jsonDocParsed.Mainline.Table.Row[i].Logo != "")
+						output += "<img src = '" + jsonDocParsed.Mainline.Table.Row[i].Logo + "' style = 'width:100%;'>";
+
+
+					output +=  "</td></tr>";
+				}
+
+				output += "</body></html>";
+				myWindow = window.open("", "_blank", "scrollbars = yes");
+				myWindow.document.write(output);
+			}
+
+			function display()
+			{
+				
+				valid = true;
+				var url = document.getElementById("json-file").value;
+				if(url == "")
+				{
+					alert("Textbox is empty. Please enter a file.");
+					valid = false;
+				}
+				else
+				{
+					loadJSON(url);
+					if (valid == true)
+					{
+						try
+						{
+							jsonDocParsed = JSON.parse(jsonDoc);
+						}
+						catch (e)
+						{
+							alert("File could not be parsed due to format.");
+							valid = false;
+						}
+					}
+
+					if(valid == true)
+					{
+						numRowsAndColumns();
+						if(valid == true)
+							createTable();
+				}
+				}
+				
+			}
+
+		</script>
+	</head>
+	<body>
+		<p style = "text-align: center;">
+			<B>Enter URL for Trucking list JSON File</B><br><br>
+			<input id = "json-file" type = "text"><br><br>
+			<input type = "button" value = "Submit Query" onClick = "display()">
+		</p>
+	</body>
+</html>
